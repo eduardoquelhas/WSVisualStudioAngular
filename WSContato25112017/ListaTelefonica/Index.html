@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="pt-BR" ng-app="ListaTelefonica" >
+<head>
+    <meta charset="UTF-8" /> 
+    <title>Lista Telefonicamudou </title>
+    <link rel="stylesheet" type="text/css" href="BootStrap/bootstrap.css">
+    <style>
+     .jumbotron {
+          width: 600px;
+          text-align: center;
+          margin-top: 20px;
+          margin-left: auto;
+          margin-right: auto;          
+     }
+     h3 {
+			margin-bottom: 30px; }     
+     .table {
+         margin-top: 20px;
+       }
+     .form-control {
+         margin-top: 5px;
+     }
+     .selecionado {
+         background-color: yellow;
+     }
+     .negrito {
+         font-weight: bold;
+     }
+     hr {
+			border-color: #999;
+		}
+    </style>
+    <script src="Lib/angular.js"></script>    
+    <script src="Lib/angular-messages.js"></script>    
+    <script src="Lib/angular-locale_pt-br.js"></script>    
+    
+    <script>
+         
+         angular.module("ListaTelefonica", ["ngMessages"]);
+
+         angular.module("ListaTelefonica").controller("ListaTelefonciaCTRL", function ($scope, $http){
+             $scope.app="Lista Telefonica Particular";
+
+
+             $scope.Operadoras = [
+                {NomeOperadora : "OI", Codigo: 15 , categoria: "celular", preco: 1.15}, 
+                {NomeOperadora : "Vivo", Codigo: 21, categoria: "celular", preco: 2.44}, 
+                {NomeOperadora : "Tim", Codigo: 14, categoria: "celular", preco: 3.65}, 
+                {NomeOperadora : "GVT", Codigo: 35, categoria: "fixo", preco: 11.77}, 
+                {NomeOperadora : "Embratel", Codigo: 44, categoria: "fixo", preco: 51.98}, 
+                
+             ];
+
+             var carregarContatos = function () {
+				$http.get("http://localhost:50571/WSListaTelefonica.asmx?op=ObterContatos").success(function (data) {
+					$scope.contatos = data;
+				}).error(function (data, status) {
+					$scope.message = "Aconteceu um problema: " + data;
+				});
+			};
+
+             $scope.AdicionarContato =  function(contato){
+                 /*
+                 $scope.AdicionarContato =  function(txtnome, txttelefone) {
+                 console.log($scope.nome);
+                 
+                 $scope.contatos.push({nome: $scope.txtnome, Telefone: $scope.txttelefone});
+                 */
+                 $scope.contatos.push(angular.copy(contato));
+                 delete $scope.contato;
+                 $scope.contatoForm.$setPristine();
+
+             };
+             $scope.ordenarPor =  function (campo){
+                 $scope.criterioDeOrdenacao = campo;
+                 $scope.direcaoDaOrdenacao = !$scope.direcaoDaOrdenacao;
+             }
+             $scope.ApagarContatos =  function (contatos) {
+                 /*
+                 var ContatosSelecionados = contatos.filter(function (contato) {
+                 */
+                 $scope.contatos = contatos.filter(function (contato) {
+                     if (!contato.selecionado) return contato;
+                 });
+                 /*
+                 console.log(ContatosSelecionados);
+                 */
+
+                 $scope.isContatoSelecionado =  function (Contatos) {
+                    return contatos.some( function (contato) {
+                        return contato.selecionado;
+                    });
+                  };
+                  CarregarContatos();
+
+             }
+
+             
+             });
+    </script>
+ </head>
+    <body ng-controller="ListaTelefonciaCTRL"> 
+        <div class="jumbotron">
+            <h3> {{app}}</h3>
+            <!--
+                {{contatos}}
+            <table class="table table-striped">
+            -->   
+             <!--So ira Montar a Tablea se o Nr de Registro for > 0 -->
+            {{contatos}}
+            <input class="form-control" type="text" ng-model="criterioDeBusca" placeholder = "Busca por nome"/>
+
+            <table ng-show="contatos.length > 0" class="table">    
+                <tr>
+                    <th></th>
+                    <th><a href="" ng-click="ordenarPor('nome')">Nome</a></th>
+                    <th><a href="" ng-click="ordenarPor('Telefone')">Telefone</a></th>
+                    <th>Operadora</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                </tr>
+                <tr ng-class="{selecionado: contato.selecionado, negrito: contato.selecionado}" 
+
+                    ng-repeat="contato in contatos 
+                               | filter:{nome: criterioDeBusca} 
+                               | orderBy: criterioDeOrdenacao: direcaoDaOrdenacao"/>
+
+                    <td><input type="checkbox" ng-model="contato.selecionado"/> </td>
+
+                    <td> {{contato.nome| uppercase}}  </td>
+                    <td> {{contato.Telefone}} </td>
+                    <!--
+                    <td> {{contato.operadora.NomeOperadora}} </td>                    
+                    -->
+                    <td> {{contato.NomeOperadora}} </td>                    
+                    <td>
+                        <div style="width: 20px; height: 20px;" ng-style="{'background-color': contato.cor }">
+                        </div>
+                    </td>
+                    <td> {{contato.data | date: "dd/MM/yyyy HH:MM" }} </td>
+                    <!--
+                    <td ng-repeat="(key,value) in contato">
+                            {{value}}
+                    </td>                    
+                   -->
+                </tr>
+            </table>       
+            <hr>
+            <!--
+            É Valido = {{contatoForm.$valid}}<br/>
+            Invalido = {{contatoForm.$invalid}}<br/>
+            -->
+            <form name="contatoForm">
+                <input class="form-control" type="text" ng-model="contato.nome" name = "nome" 
+                  placeholder="Nome" ng-required="true" ng-minlength="10"/>
+                <input class="form-control" type="text" ng-model="contato.Telefone" name="Telefone" 
+                   placeholder="Telefone" ng-required="true" ng-pattern="/^\d{4,5}-\d{4}$/"/>       
+                
+                <select  class="form-control" ng-model="contato.operadora" 
+                ng-options="operadora.NomeOperadora + ' ( ' + ( operadora.preco | currency ) + ' ) ' group by operadora.categoria for operadora in Operadoras" 
+                >
+                <option value="">Selecione Uma Operadora para Seguir</option>
+                </select>
+
+                <!--               
+                {{nome}}
+                {{telefone}}
+                           
+                {{Operadoras}}
+                -->
+            </form>
+
+            <div ng-messages = "contatoForm.nome.$error" class="alert alert-danger">
+                    <div ng-message="required">
+                         Por favor, preencha o campo e Nome !
+                    </div>
+            
+                    <div ng-message="minlength">
+                         O Campor nome deve ter no mínimo 10 caracteres
+                    </div>           
+            </div>
+
+
+            <div ng-show="contatoForm.Telefone.$error.required && contatoForm.Telefone.$dirty" 
+                 class="alert alert-danger">
+                    Por favor, preencha o campo e Telefone !
+            </div>
+
+            <div ng-show="contatoForm.Telefone.$error.pattern" 
+                 class="alert alert-danger">
+                  Caracteres inválidos telefone. Fora do Padrão 99999-9999
+            </div>
+
+
+            <button class="btn btn-primary btn-block" ng-click="AdicionarContato(contato)" 
+              ng-disabled="!contato.nome || !contato.Telefone" >Adcionar Contato</button>
+            <!-- 
+            <button class="btn btn-danger btn-block" ng-click="ApagarContatos(contatos)" 
+             ng-disabled="!isContatoSelecionado(contato)">Apagar Contatos</button>  
+            -->
+            <button class="btn btn-danger btn-block" ng-click="ApagarContatos(contatos)" 
+            >Apagar Contatos</button>  
+        </div> 
+        <!-- Para colocar em todas as páginas fazendo uma referencia
+             No Chrome não Funciona pela Politica da Mesma Origem.-->
+        <div ng-include="'footer.html'" ></div>
+    </body>
+</html>

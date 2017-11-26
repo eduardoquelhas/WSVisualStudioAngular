@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html ng-app="ContatosApp">
+<head>
+    <meta charset="utf-8" />
+    
+    <title>Novo WervService</title>
+    
+    <script src="Lib/angular.js"></script>
+    <link href="Lib/bootstrap.css" rel="stylesheet" />
+    <script src="Script/Angular1.js"></script>
+
+    <style>
+        .jumbotron {
+            width: 600px;
+            text-align: center;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h3 {
+            margin-bottom: 30px;
+        }
+
+        .table {
+            margin-top: 20px;
+        }
+
+        .form-control {
+            margin-top: 5px;
+        }
+
+        .selecionado {
+            background-color: yellow;
+        }
+
+        .negrito {
+            font-weight: bold;
+        }
+
+        hr {
+            border-color: #999;
+        }
+    </style>
+
+</head>
+<body>
+    <div ng-controller="ContatosCtrl" class="jumbotron"> estou executando
+    {{contatos}}
+        <table class="table table-striped" border="1">
+            <thead>
+                <tr>
+                    <th>Codigo</th>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Data</th>
+                    <th>Nome Operadora</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="contato in contatos">
+                    <td>{{contato.Codigo}} </td>
+                    <td>{{contato.Nome}} </td>
+                    <td>{{contato.Telefone}} </td>
+                    <td>{{contato.Data}} </td>
+                    <td>{{contato.NomeOperadora}} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
